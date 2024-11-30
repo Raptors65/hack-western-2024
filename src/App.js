@@ -16,6 +16,12 @@ const HandsContainer = () => {
   const inputVideoRef = useRef(null);
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
+  
+  const [curCursor, setCursor] = useState("auto");
+  const [fingersRaised, setFingersRaised] = useState(0);
+
+  const [fingerHistory, setFingerHistory] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const [selected, setSelected] = useState(-1);
 
   useEffect(() => {
     if (!inputVideoReady) {
@@ -108,7 +114,7 @@ const HandsContainer = () => {
   }
 
   const handAngles = (handLandmarks) => {
-    if (handLandmarks === undefined) return [0,0,0,0,0];
+    if (handLandmarks === undefined) return [360,360,360,360,360];
     const lst = [
       [1, 3, 4], //finger 1
       [5, 7, 8], //finger 2
@@ -141,6 +147,81 @@ const HandsContainer = () => {
     }
 
     return true;
+  }
+
+  const distancesToWrist = (hand) => {
+    const fingertips = [4,8,12,16,20];
+    const wrist = 0;
+    const dists = [];
+    // console.log(hand);
+
+    for (let i of fingertips){
+      let dx = hand[i].x - hand[wrist].x;
+      let dy = hand[i].y - hand[wrist].y;
+      let dz = hand[i].z - hand[wrist].z;
+      dists.push(Math.sqrt(dist2(dx, dy, dz)));
+    }
+
+    // console.log(dists);
+    return dists;
+  }
+
+  const isFist = (hand) => {
+    const dists = distancesToWrist(hand);
+    dists.shift();
+    console.log();
+
+    if (Math.max(...dists) > 0.15){
+      setCursor('auto');
+      return false;
+    }
+
+    setCursor('url(image2.png), auto');
+
+    return true;
+  }
+
+  const orFist = (results) => {
+    return isFist(results.leftHandLandmarks, results.rightHandLandmarks);
+  }
+
+  const countFingers = (hand) => {
+    let ret = 0;
+    hand = handAngles(hand);
+    for (let i=1; i<=5; i++){
+      if (Math.abs(hand[i] - 180) < 20){
+        ret ++;
+      }
+    }
+    // console.log(hand);
+
+    return ret;
+  }
+
+  const calculateFingersRaised = (results) => {
+    const fingers = countFingers(results.leftHandLandmarks) + countFingers(results.rightHandLandmarks);
+    // console.log(fingers);
+    return fingers;
+  }
+
+  const updateSelected = () => {
+    var flag = -1;
+    for (let i=0; i<=8; i++){
+      flag = i;
+      for (let k=0; k<fingerHistory.length; k++){
+        // console.log(fingerHistory);
+        if (fingerHistory[k] !== i){
+          flag = -1;
+          break;
+        }
+      }
+      if (flag === i){
+        console.log("DONE", flag);
+        return flag;
+      }
+    }
+
+    return -1;
   }
 
   const onResults = (results) => {
@@ -177,14 +258,24 @@ const HandsContainer = () => {
        {color: '#FF0000', lineWidth: 2});
 
       calculateAngles(results.poseLandmarks);
-      console.log(bothHandsRaised(results));
+
+      let newFingers = calculateFingersRaised(results)
+      setFingersRaised(newFingers);
+
+      let newHistory = fingerHistory;
+      newHistory.shift();
+      newHistory.push(newFingers);
+
+      setFingerHistory(newHistory);
+
+      setSelected(updateSelected());
       
       contextRef.current.restore();
     }
   };
 
   return (
-    <div className="hands-container">
+    <div className="hands-container" style={{cursor: curCursor}}>
       <video
         autoPlay
         ref={inputVideoRef}
