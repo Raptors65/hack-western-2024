@@ -62,6 +62,51 @@ const HandsContainer = () => {
     }
   }, [inputVideoReady]);
 
+  const dist2 = (dx, dy, dz) => {
+    return dx ** 2 + dy ** 2 + dz ** 2;
+  }
+
+  const calculateAngle = (p1, p2, p3) => {
+    const a2 = dist2(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z);
+    const b2 = dist2(p2.x - p3.x, p2.y - p3.y, p2.z - p3.z);
+    const c2 = dist2(p1.x - p3.x, p1.y - p3.y, p1.z - p3.z);
+    const angle = Math.acos((a2 + b2 - c2) / (2 * Math.sqrt(a2) * Math.sqrt(b2)));
+    return angle;
+  }
+
+  const calculateAngles = (poseLandmarks) => {
+    console.log(poseLandmarks);
+    const lst = [
+      [12, 14, 16],
+      [11, 12, 14],
+      [12, 11, 13],
+      [11, 13, 15],
+      [14, 12, 24],
+      [13, 11, 23],
+      [12, 24, 23],
+      [11, 23, 24],
+      [12, 24, 26],
+      [11, 23, 25],
+      [24, 26, 28],
+      [23, 25, 27],
+    ]
+
+    const angles = [];
+    for (let p of lst) {
+      angles.push(calculateAngle(poseLandmarks[p[0]], poseLandmarks[p[1]], poseLandmarks[p[2]]));
+    }
+    return angles;
+  }
+
+  const calculateScore = (angles1, angles2) => {
+    // take average of absolute difference of each pair of angles
+    let sum = 0, count = angles1.length;
+    for (let i=0; i<count; ++i) {
+      sum += Math.abs(angles1[i] - angles2[i]);
+    }
+    return sum / count;
+  }
+
   const onResults = (results) => {
     if (canvasRef.current && contextRef.current) {
       setLoaded(true);
@@ -94,6 +139,8 @@ const HandsContainer = () => {
               {color: '#00CC00', lineWidth: 5});
       drawLandmarks(contextRef.current, results.rightHandLandmarks,
        {color: '#FF0000', lineWidth: 2});
+
+      calculateAngles(results.poseLandmarks);
       
       contextRef.current.restore();
     }
