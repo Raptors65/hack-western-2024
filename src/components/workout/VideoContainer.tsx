@@ -66,6 +66,7 @@ const VideoContainer = ({
   const [streamReady, setStreamReady] = useState(false);
   const [userResults, setUserResults] = useState<Results | null>(null);
   const [vidResults, setVidResults] = useState<Results | null>(null);
+  const [totalScore, setTotalScore] = useState(0);
 
   // const { status, startRecording, stopRecording, mediaBlobUrl, previewStream } =
   //   useReactMediaRecorder({ screen: true });
@@ -171,7 +172,13 @@ const VideoContainer = ({
     // console.log("hey", vidResults)
     if (!userResults?.poseWorldLandmarks || !vidResults?.poseWorldLandmarks) return;
     
-    console.log("score", calculateScore(calculateAngles(userResults.poseWorldLandmarks), calculateAngles(vidResults.poseWorldLandmarks)));
+    const score = calculateScore(calculateAngles(userResults.poseWorldLandmarks), calculateAngles(vidResults.poseWorldLandmarks)) / 10;
+
+    // console.log(score);
+    if (!isNaN(score)) {
+      setTotalScore((prev) => prev + score);
+    }
+    console.log("total", totalScore);
   }, [userResults, vidResults]);
 
   useEffect(() => {
@@ -327,8 +334,8 @@ const VideoContainer = ({
         className,
       )}
     >
-      <div className="absolute top-4 left-4 right-4 z-30">
-        <YouTubeInput onSubmit={setYoutubeVideoId} />
+      <div className="absolute top-3 left-4 right-4 z-30">
+        <YouTubeInput onSubmit={setYoutubeVideoId} isPlaying={isPlaying} score={totalScore} maxScore={100000} />
       </div>
 
       <video
