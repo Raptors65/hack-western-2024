@@ -3,7 +3,7 @@ import { Camera, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PoseDetection from "./PoseDetection";
-import { FACEMESH_TESSELATION, HAND_CONNECTIONS, Holistic, POSE_CONNECTIONS, VERSION } from "@mediapipe/holistic";
+import { Pose, POSE_CONNECTIONS, ResultsListener, VERSION } from "@mediapipe/pose";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
 
 interface WebcamFeedProps {
@@ -11,6 +11,7 @@ interface WebcamFeedProps {
   onStreamReady?: (stream: MediaStream) => void;
   onError?: (error: Error) => void;
   className?: string;
+  onResult: ResultsListener;
 }
 
 // Keep a reference to the active stream and its initialization promise
@@ -45,6 +46,7 @@ const WebcamFeed = ({
   onStreamReady = () => {},
   onError = () => {},
   className = "",
+  onResult
 }: WebcamFeedProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -71,30 +73,34 @@ const WebcamFeed = ({
       );
       drawConnectors(contextRef.current, results.poseLandmarks, POSE_CONNECTIONS,
         {color: '#00FF00', lineWidth: 4});
+      // drawConnectors(contextRef.current, results.poseLandmarks, [[11, 13], [13, 15]],
+        // {color: '#00FF00', lineWidth: 4});
       drawLandmarks(contextRef.current, results.poseLandmarks,
             {color: '#FF0000', lineWidth: 2});
-      drawConnectors(contextRef.current, results.faceLandmarks, FACEMESH_TESSELATION,
-              {color: '#C0C0C070', lineWidth: 1});
-      drawConnectors(contextRef.current, results.leftHandLandmarks, HAND_CONNECTIONS,
-              {color: '#CC0000', lineWidth: 5});
-      drawLandmarks(contextRef.current, results.leftHandLandmarks,
-            {color: '#00FF00', lineWidth: 2});
-      drawConnectors(contextRef.current, results.rightHandLandmarks, HAND_CONNECTIONS,
-              {color: '#00CC00', lineWidth: 5});
-      drawLandmarks(contextRef.current, results.rightHandLandmarks,
-       {color: '#FF0000', lineWidth: 2});
+      // drawConnectors(contextRef.current, results.faceLandmarks, FACEMESH_TESSELATION,
+      //         {color: '#C0C0C070', lineWidth: 1});
+      // drawConnectors(contextRef.current, results.leftHandLandmarks, HAND_CONNECTIONS,
+      //         {color: '#CC0000', lineWidth: 5});
+      // drawLandmarks(contextRef.current, results.leftHandLandmarks,
+      //       {color: '#00FF00', lineWidth: 2});
+      // drawConnectors(contextRef.current, results.rightHandLandmarks, HAND_CONNECTIONS,
+      //         {color: '#00CC00', lineWidth: 5});
+      // drawLandmarks(contextRef.current, results.rightHandLandmarks,
+      //  {color: '#FF0000', lineWidth: 2});
       
       contextRef.current.restore();
     }
+
+    onResult(results);
   };
 
   const initializeWebcam = async () => {
     setIsLoading(true);
     setError(null);
 
-    const holistic = new Holistic({
+    const holistic = new Pose({
       locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@${VERSION}/${file}`,
+        `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${VERSION}/${file}`,
     });
 
     holistic.setOptions({
@@ -204,7 +210,7 @@ const WebcamFeed = ({
       <video
         ref={videoRef}
         className={cn(
-          "w-full h-full object-cover absolute z-0",
+          "w-full h-full object-cover absolute -z-10",
           (isLoading || error) && "opacity-50",
         )}
         style={{

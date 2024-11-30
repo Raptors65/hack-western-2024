@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import YouTube from "react-youtube";
 import { useReactMediaRecorder } from "react-media-recorder";
-import { cn } from "@/lib/utils";
+import { calculateAngle, calculateAngles, calculateScore, cn } from "@/lib/utils";
 import InstructorVideo from "./InstructorVideo";
 import WebcamFeed from "./WebcamFeed";
 import AlignmentGrid from "./AlignmentGrid";
@@ -9,7 +9,7 @@ import VideoControls from "./VideoControls";
 import LayoutToggle from "./LayoutToggle";
 import GridToggle from "./GridToggle";
 import YouTubeInput from "./YouTubeInput";
-import { Holistic, VERSION } from "@mediapipe/holistic";
+import { Pose, Results, ResultsListener, VERSION } from "@mediapipe/pose";
 
 interface VideoContainerProps {
   className?: string;
@@ -28,7 +28,7 @@ const getStream = async (callback: () => void): Promise<MediaStream> => {
       width: { ideal: 1280 },
       height: { ideal: 720 },
       facingMode: "user",
-      frameRate: { ideal: 30, max: 30 },
+      frameRate: { ideal: 20, max: 20 },
       aspectRatio: { ideal: 16 / 9 },
     },
   });
@@ -64,19 +64,23 @@ const VideoContainer = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [streamReady, setStreamReady] = useState(false);
+  const [userResults, setUserResults] = useState<Results | null>(null);
+  const [vidResults, setVidResults] = useState<Results | null>(null);
 
   // const { status, startRecording, stopRecording, mediaBlobUrl, previewStream } =
   //   useReactMediaRecorder({ screen: true });
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const contextRef = useRef<CanvasRenderingContext2D>(null);
 
   const initializeRecording = async () => {
     setIsLoading(true);
     setError(null);
 
-    const holistic = new Holistic({
+    const holistic = new Pose({
       locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@${VERSION}/${file}`,
+        `https://cdn.jsdelivr.net/npm/@mediapipe/pose@${VERSION}/${file}`,
     });
 
     holistic.setOptions({
@@ -85,12 +89,40 @@ const VideoContainer = ({
       minTrackingConfidence: 0.5,
     });
 
-    holistic.onResults(onResults);
+    holistic.onResults(onVidResults);
 
     const sendToMediaPipe = async () => {
       if (videoRef.current) {
         if (videoRef.current.videoWidth) {
-          await holistic.send({ image: videoRef.current });
+          if (contextRef.current) {
+            contextRef.current.save();
+            
+            contextRef.current.drawImage(
+              videoRef.current,
+              0,
+              225,
+              640,
+              720,
+              0,
+              0,
+              canvasRef.current.width,
+              canvasRef.current.height
+            );
+
+            // console.log(videoRef.current,
+            //   0,
+            //   0,
+            //   640,
+            //   720,
+            //   0,
+            //   0,
+            //   canvasRef.current.width,
+            //   canvasRef.current.height);
+      
+            // contextRef.current.drawImage(results.image, 0, 0, videoRef.current.width, videoRef.current.height, -100, 0, canvasRef.current.width, canvasRef.current.height);
+            // contextRef.current.restore();
+          }
+          await holistic.send({ image: canvasRef.current });
         }
         requestAnimationFrame(sendToMediaPipe);
       }
@@ -124,12 +156,31 @@ const VideoContainer = ({
     }
   };
 
-  const onResults = (results) => {
-    console.log(results);
+  const onVidResults: ResultsListener = (results) => {
+    // console.log("results from vid", results);
+    setVidResults(results);
+  };
+
+  const onUserResults: ResultsListener = (results) => {
+    // console.log("results from user", results);
+    setUserResults(results);
   };
 
   useEffect(() => {
+    // if (vidResults?.poseWorldLandmarks) console.log(calculateAngle(vidResults.poseWorldLandmarks[11], vidResults.poseWorldLandmarks[13], vidResults.poseWorldLandmarks[15]));
+    // console.log("hey", vidResults)
+    if (!userResults?.poseWorldLandmarks || !vidResults?.poseWorldLandmarks) return;
+    
+    console.log("score", calculateScore(calculateAngles(userResults.poseWorldLandmarks), calculateAngles(vidResults.poseWorldLandmarks)));
+  }, [userResults, vidResults]);
+
+  useEffect(() => {
     let mounted = true;
+
+    if (canvasRef.current) {
+      contextRef.current = canvasRef.current.getContext('2d');
+      // console.log("context set")
+    }
 
     const init = async () => {
       if (!mounted) return;
@@ -283,13 +334,22 @@ const VideoContainer = ({
       <video
         ref={videoRef}
         className={cn(
-          "absolute h-screen w-[50vw] object-cover z- 20 object-left",
+          "absolute h-screen w-[50vw] object-cover -z-20 object-left",
           (isLoading || error) && "opacity-50",
         )}
         style={{
           transform: "scaleX(-1)",
         }}
       />
+
+      <canvas ref={canvasRef} className={cn(
+          "absolute -z-50 object-cover w-[50vw] h-screen left-[55rem]",
+        )}
+        style={{
+          transform: "scaleX(-1)",
+        }}
+        width={640}
+        height={720}></canvas>
 
       <div className="relative w-full h-full flex mt-16">
         {/* Main Container */}
@@ -357,6 +417,7 @@ const VideoContainer = ({
                   isEnabled={isCameraEnabled}
                   className="w-full h-full"
                   onError={setWebcamError}
+                  onResult={onUserResults}
                 />
               </div>
             </div>
@@ -370,6 +431,7 @@ const VideoContainer = ({
                 isEnabled={isCameraEnabled}
                 className="w-full h-full"
                 onError={setWebcamError}
+                onResult={setUserResults}
               />
             </div>
           )}
