@@ -5,47 +5,48 @@ import { Clock, Trophy, Calendar, TrendingUp } from "lucide-react";
 import HomeButton from "../ui/HomeButton";
 import { Bar, BarChart, CartesianGrid, Legend, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+// Placeholder data - would normally come from a backend
 const data = [
   {
     day: 'Sunday',
     Time: 0.5,
-    Score: 1200,
+    Score: 120023,
     amt: 2400,
   },
   {
     day: 'Monday',
     Time: 2,
-    Score: 3600,
+    Score: 360120,
     amt: 2210,
   },
   {
     day: 'Tuesday',
     Time: 1,
-    Score: 2500,
+    Score: 252345,
     amt: 2290,
   },
   {
     day: 'Wednesday',
     Time: 0.7,
-    Score: 2000,
+    Score: 200000,
     amt: 2000,
   },
   {
     day: 'Thursday',
     Time: 1.9,
-    Score: 5000,
+    Score: 500000,
     amt: 2181,
   },
   {
     day: 'Friday',
     Time: 1.4,
-    Score: 3400,
+    Score: 340000,
     amt: 2500,
   },
   {
     day: 'Saturday',
     Time: 2.5,
-    Score: 4320,
+    Score: 432000,
     amt: 2100,
   },
 ];
@@ -54,7 +55,7 @@ const Profile = () => {
   // Placeholder data - would normally come from a backend
   const stats = {
     totalTime: "12h 30m",
-    highScore: 2500,
+    highScore: 500000,
     streak: 5,
     lastSession: "2h 15m",
   };
