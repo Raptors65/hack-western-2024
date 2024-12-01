@@ -81,6 +81,54 @@ const VideoContainer = ({
   const contextRef = useRef<CanvasRenderingContext2D>(null);
   const screenshotsRef = useRef<string[]>([]);
 
+  const dist2 = (dx: number, dy: number, dz: number) => {
+    return dx ** 2 + dy ** 2 + dz ** 2;
+  }
+
+  const calculateAngle = (p1: any, p2: any, p3: any) => {
+    const a2 = dist2(p1.x - p2.x, p1.y - p2.y, p1.z - p2.z);
+    const b2 = dist2(p2.x - p3.x, p2.y - p3.y, p2.z - p3.z);
+    const c2 = dist2(p1.x - p3.x, p1.y - p3.y, p1.z - p3.z);
+    const angle = Math.acos((a2 + b2 - c2) / (2 * Math.sqrt(a2) * Math.sqrt(b2)));
+    return angle * 180 / Math.PI;
+  }
+
+  const handAngles = (handLandmarks: any) => {
+    if (handLandmarks === undefined) return [360,360,360,360,360];
+    const lst = [
+      [1, 3, 4], //finger 1
+      [5, 7, 8], //finger 2
+      [9, 11, 12], //finger 3
+      [13, 15, 16], //finger 4
+      [17, 19, 20] //finger 5
+    ];
+
+    const angles = [];
+
+    for (let p of lst){
+      angles.push(calculateAngle(handLandmarks[p[0]], handLandmarks[p[1]], handLandmarks[p[2]]));
+    }
+    return angles;
+  }
+
+  const bothHandsRaised = (results: any) => {
+    const leftAngles = handAngles(results.leftHandLandmarks);
+    const rightAngles = handAngles(results.rightHandLandmarks);
+
+    for (let a of leftAngles){
+      if (Math.abs(a - 180) > 20){
+        return false;
+      }
+    }
+    for (let a of rightAngles){
+      if (Math.abs(a - 180) > 20){
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   const initializeRecording = async () => {
     setIsLoading(true);
     setError(null);
@@ -201,7 +249,7 @@ const VideoContainer = ({
     const score = calculateScore(calculateAngles(userResults.poseWorldLandmarks), calculateAngles(vidResults.poseWorldLandmarks)) / 10;
 
     // console.log(score);
-    if (!isNaN(score)) {
+    if (!isNaN(score) && !bothHandsRaised(userResults)) {
       setTotalScore((prev) => prev + score);
     }
     console.log("total", totalScore);
@@ -522,7 +570,7 @@ const VideoContainer = ({
         </div>
       </div>
       }
-      <Screenshot getScreenshots={getScreenshots} hidden={!workoutIsDone} />
+      <Screenshot score = {totalScore} getScreenshots={getScreenshots} hidden={!workoutIsDone} />
     </>
   );
 };
