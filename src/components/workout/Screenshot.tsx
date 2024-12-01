@@ -2,50 +2,52 @@ import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 
 type ScreenshotProps = {
-  numScreenshots: number;
   hidden: boolean;
+  getScreenshots: () => string[];
 }
 
 const Screenshot = (props: ScreenshotProps) => {
   let stream;
   const screenRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [screenshots, setScreenshots] = useState([]);
+  // const [screenshots, setScreenshots] = useState([]);
   const [screenshotId, setScreenshotId] = useState(0);
   
-  const init = async () => {
-    const options = {
-      video: true,
-      audio: false,
-      selfBrowserSurface: "exclude",
-      surfaceSwitching: "include", // or exclude
-    }
+  // const init = async () => {
+  //   const options = {
+  //     video: true,
+  //     audio: false,
+  //     selfBrowserSurface: "exclude",
+  //     surfaceSwitching: "include", // or exclude
+  //   }
 
-    try {
-      stream = await navigator.mediaDevices.getDisplayMedia(options);
-      screenRef.current.srcObject = stream;
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  //   try {
+  //     stream = await navigator.mediaDevices.getDisplayMedia(options);
+  //     screenRef.current.srcObject = stream;
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
 
-  useEffect(() => {
-    if (props.numScreenshots > 0) {
-      captureFrame();
-    }
-  }, [props.numScreenshots]);
+  // useEffect(() => {
+  //   if (props.numScreenshots > 0) {
+  //     captureFrame();
+  //   }
+  // }, [props.numScreenshots]);
 
-  const captureFrame = async () => {
-    // canvasRef.current.width = screenRef.current.videoWidth;
-    // canvasRef.current.height = screenRef.current.videoHeight;
-    canvasRef.current.getContext('2d').
-      drawImage(screenRef.current, 0, 0, window.innerWidth, window.innerHeight);
-    setScreenshots(x => [...x, canvasRef.current.toDataURL()]);
-  }
+  // const captureFrame = async () => {
+  //   // canvasRef.current.width = screenRef.current.videoWidth;
+  //   // canvasRef.current.height = screenRef.current.videoHeight;
+  //   canvasRef.current.getContext('2d').
+  //     drawImage(screenRef.current, 0, 0, window.innerWidth, window.innerHeight);
+  //   setScreenshots(x => [...x, canvasRef.current.toDataURL()]);
+  // }
 
-  useEffect(() => {
-    init();
-  }, []);
+  // useEffect(() => {
+  //   init();
+  // }, []);
+
+  const screenshots = props.getScreenshots();
 
   const incrementScreenshotId = () => {
     setScreenshotId(x => (screenshotId + 1 == screenshots.length ? 0 : x + 1));
@@ -55,7 +57,6 @@ const Screenshot = (props: ScreenshotProps) => {
     <div className={cn("overflow-hidden", { "hidden": props.hidden })}>
       <video ref={screenRef} autoPlay width={window.innerWidth} height={window.innerHeight} hidden />
       <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} hidden />
-      <button onClick={captureFrame}>capture</button>
       {screenshots.length > 0 &&
         <div className="relative flex w-[95vw] items-center h-[90vh] justify-center">
           <img className="absolute top-5 left-5" src={screenshots[screenshotId]} onClick={incrementScreenshotId} />

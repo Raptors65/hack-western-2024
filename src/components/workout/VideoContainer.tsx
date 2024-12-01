@@ -70,6 +70,8 @@ const VideoContainer = ({
   const [totalScore, setTotalScore] = useState(0);
   const [numScreenshotsTaken, setNumScreenshotsTaken] = useState(0);
   const [workoutIsDone, setWorkoutIsDone] = useState(false);
+  const fullCanvasRef = useRef<HTMLCanvasElement>(null);
+  // const [screenshots, setScreenshots] = useState<string[]>([]);
 
   // const { status, startRecording, stopRecording, mediaBlobUrl, previewStream } =
   //   useReactMediaRecorder({ screen: true });
@@ -77,6 +79,7 @@ const VideoContainer = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextRef = useRef<CanvasRenderingContext2D>(null);
+  const screenshotsRef = useRef<string[]>([]);
 
   const initializeRecording = async () => {
     setIsLoading(true);
@@ -127,7 +130,17 @@ const VideoContainer = ({
             // contextRef.current.restore();
           }
 
-          if (numScreenshotsTaken < 5 && Math.random() < (1 / 1000)) {
+          if (numScreenshotsTaken < 5 && Math.random() < (1 / 100) && fullCanvasRef.current) {
+            fullCanvasRef.current.getContext("2d").drawImage(
+              videoRef.current,
+              0,
+              0,
+              window.innerWidth,
+              window.innerHeight
+            );
+
+            // console.log("hey!", fullCanvasRef.current.toDataURL(), screenshots);
+            screenshotsRef.current.push(fullCanvasRef.current.toDataURL());
             // take screenshot
             setNumScreenshotsTaken((prev) => prev + 1);
           }
@@ -338,6 +351,12 @@ const VideoContainer = ({
     };
   }, [isPlaying]);
 
+  // useEffect(() => {
+  //   setScreenshots(screenshotsRef.current)
+  // }, [screenshotsRef.current]);
+
+  const getScreenshots = () => screenshotsRef.current;
+
   return (
     <>
     {!workoutIsDone &&
@@ -365,6 +384,8 @@ const VideoContainer = ({
             transform: "scaleX(-1)",
           }}
         />
+
+        <canvas ref={fullCanvasRef} className="absolute w-full h-full" width={window.innerWidth} height={window.innerHeight} hidden></canvas>
 
         <canvas ref={canvasRef} className={cn(
             "absolute -z-50 object-cover w-[50vw] h-screen left-[55rem]",
@@ -497,7 +518,7 @@ const VideoContainer = ({
         </div>
       </div>
       }
-      <Screenshot numScreenshots={numScreenshotsTaken} hidden={!workoutIsDone} />
+      <Screenshot getScreenshots={getScreenshots} hidden={!workoutIsDone} />
     </>
   );
 };

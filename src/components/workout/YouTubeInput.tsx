@@ -32,6 +32,9 @@ const YouTubeInput = (props: YouTubeInputProps) => {
     <>
       {!props.isPlaying ? 
         <form onSubmit={handleSubmit} className="flex gap-2">
+          <a href="/" className="flex items-center ml-1 mr-3">
+            <img src="/home.svg" width={24} height={24} />
+          </a>
           <input
             type="text"
             value={url}
