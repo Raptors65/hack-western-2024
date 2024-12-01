@@ -6,6 +6,7 @@ type YouTubeInputProps = {
   isPlaying: boolean;
   score: number;
   maxScore: number;
+  onEndWorkout: () => void;
 }
 
 const YouTubeInput = (props: YouTubeInputProps) => {
@@ -52,8 +53,8 @@ const YouTubeInput = (props: YouTubeInputProps) => {
         <Progress value={props.score / props.maxScore * 100} />
         <span className="text-xl">{props.maxScore.toLocaleString()}</span>
         <button
-          disabled={!url}
           className="px-4 py-2 w-36 bg-green-500 text-white rounded disabled:opacity-50"
+          onClick={props.onEndWorkout}
         >
           End Workout
         </button>

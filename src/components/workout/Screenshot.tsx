@@ -1,6 +1,12 @@
+import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 
-const Screenshot = () => {
+type ScreenshotProps = {
+  numScreenshots: number;
+  hidden: boolean;
+}
+
+const Screenshot = (props: ScreenshotProps) => {
   let stream;
   const screenRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,6 +29,12 @@ const Screenshot = () => {
     }
   }
 
+  useEffect(() => {
+    if (props.numScreenshots > 0) {
+      captureFrame();
+    }
+  }, [props.numScreenshots]);
+
   const captureFrame = async () => {
     // canvasRef.current.width = screenRef.current.videoWidth;
     // canvasRef.current.height = screenRef.current.videoHeight;
@@ -40,7 +52,7 @@ const Screenshot = () => {
   }
 
   return (
-    <div className="overflow-hidden">
+    <div className={cn("overflow-hidden", { "hidden": props.hidden })}>
       <video ref={screenRef} autoPlay width={window.innerWidth} height={window.innerHeight} hidden />
       <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} hidden />
       <button onClick={captureFrame}>capture</button>

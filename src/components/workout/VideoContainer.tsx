@@ -10,6 +10,7 @@ import LayoutToggle from "./LayoutToggle";
 import GridToggle from "./GridToggle";
 import YouTubeInput from "./YouTubeInput";
 import { Pose, Results, ResultsListener, VERSION } from "@mediapipe/pose";
+import Screenshot from "./Screenshot";
 
 interface VideoContainerProps {
   className?: string;
@@ -67,6 +68,8 @@ const VideoContainer = ({
   const [userResults, setUserResults] = useState<Results | null>(null);
   const [vidResults, setVidResults] = useState<Results | null>(null);
   const [totalScore, setTotalScore] = useState(0);
+  const [numScreenshotsTaken, setNumScreenshotsTaken] = useState(0);
+  const [workoutIsDone, setWorkoutIsDone] = useState(false);
 
   // const { status, startRecording, stopRecording, mediaBlobUrl, previewStream } =
   //   useReactMediaRecorder({ screen: true });
@@ -123,6 +126,12 @@ const VideoContainer = ({
             // contextRef.current.drawImage(results.image, 0, 0, videoRef.current.width, videoRef.current.height, -100, 0, canvasRef.current.width, canvasRef.current.height);
             // contextRef.current.restore();
           }
+
+          if (numScreenshotsTaken < 5 && Math.random() < (1 / 1000)) {
+            // take screenshot
+            setNumScreenshotsTaken((prev) => prev + 1);
+          }
+
           await holistic.send({ image: canvasRef.current });
         }
         requestAnimationFrame(sendToMediaPipe);
@@ -233,6 +242,10 @@ const VideoContainer = ({
     }
   };
 
+  const handleEndWorkout = () => {
+    setWorkoutIsDone(true);
+  }
+
   const handleReset = () => {
     if (youtubeVideoId && youtubePlayerRef.current) {
       youtubePlayerRef.current.seekTo(0);
@@ -326,159 +339,166 @@ const VideoContainer = ({
   }, [isPlaying]);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "relative w-full h-full bg-background overflow-hidden",
-        isFullscreen && "fixed inset-0 z-50",
-        className,
-      )}
-    >
-      <div className="absolute top-3 left-4 right-4 z-30">
-        <YouTubeInput onSubmit={setYoutubeVideoId} isPlaying={isPlaying} score={totalScore} maxScore={100000} />
-      </div>
-
-      <video
-        ref={videoRef}
+    <>
+    {!workoutIsDone &&
+      <div
+        ref={containerRef}
         className={cn(
-          "absolute h-screen w-[50vw] object-cover -z-20 object-left",
-          (isLoading || error) && "opacity-50",
+          "relative w-full h-full bg-background overflow-hidden",
+          isFullscreen && "fixed inset-0 z-50",
+          className,
         )}
-        style={{
-          transform: "scaleX(-1)",
-        }}
-      />
+      >
+        <div className="absolute top-3 left-4 right-4 z-30">
+          <YouTubeInput onSubmit={setYoutubeVideoId} isPlaying={isPlaying} score={totalScore} maxScore={100000} onEndWorkout={handleEndWorkout} />
+        </div>
 
-      <canvas ref={canvasRef} className={cn(
-          "absolute -z-50 object-cover w-[50vw] h-screen left-[55rem]",
-        )}
-        style={{
-          transform: "scaleX(-1)",
-        }}
-        width={640}
-        height={720}></canvas>
+        
 
-      <div className="relative w-full h-full flex mt-16">
-        {/* Main Container */}
-        <div className="relative flex w-full h-full transition-all duration-300 ease-in-out">
-          {/* Video Container */}
-          <div
-            className={cn(
-              "relative h-full transition-all duration-300 ease-in-out",
-              layout === "split" && !isFullscreen ? "w-1/2" : "w-full",
-            )}
-            style={{ minHeight: "400px" }}
-          >
-            {youtubeVideoId && (
-              <div className="absolute inset-0">
-                <YouTube
-                  videoId={youtubeVideoId}
-                  opts={{
-                    playerVars: {
-                      autoplay: 0,
-                      controls: 0,
-                      modestbranding: 1,
-                      rel: 0,
-                      playsinline: 1,
-                      enablejsapi: 1,
-                    },
-                    width: "100%",
-                    height: "100%",
-                  }}
-                  onReady={handleYouTubeReady}
-                  onStateChange={handleYouTubeStateChange}
-                  onError={handleYouTubeError}
-                  className="w-full h-full"
-                  iframeClassName="w-full h-full absolute inset-0"
-                />
+        <video
+          ref={videoRef}
+          className={cn(
+            "absolute h-screen w-[50vw] object-cover -z-20 object-left",
+            (isLoading || error) && "opacity-50",
+          )}
+          style={{
+            transform: "scaleX(-1)",
+          }}
+        />
+
+        <canvas ref={canvasRef} className={cn(
+            "absolute -z-50 object-cover w-[50vw] h-screen left-[55rem]",
+          )}
+          style={{
+            transform: "scaleX(-1)",
+          }}
+          width={640}
+          height={720}></canvas>
+
+        <div className="relative w-full h-full flex mt-16">
+          {/* Main Container */}
+          <div className="relative flex w-full h-full transition-all duration-300 ease-in-out">
+            {/* Video Container */}
+            <div
+              className={cn(
+                "relative h-full transition-all duration-300 ease-in-out",
+                layout === "split" && !isFullscreen ? "w-1/2" : "w-full",
+              )}
+              style={{ minHeight: "400px" }}
+            >
+              {youtubeVideoId && (
+                <div className="absolute inset-0">
+                  <YouTube
+                    videoId={youtubeVideoId}
+                    opts={{
+                      playerVars: {
+                        autoplay: 0,
+                        controls: 0,
+                        modestbranding: 1,
+                        rel: 0,
+                        playsinline: 1,
+                        enablejsapi: 1,
+                      },
+                      width: "100%",
+                      height: "100%",
+                    }}
+                    onReady={handleYouTubeReady}
+                    onStateChange={handleYouTubeStateChange}
+                    onError={handleYouTubeError}
+                    className="w-full h-full"
+                    iframeClassName="w-full h-full absolute inset-0"
+                  />
+                </div>
+              )}
+
+              {!youtubeVideoId && (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                  Enter a YouTube URL to begin
+                </div>
+              )}
+            </div>
+
+            {/* Webcam Feed */}
+            {layout === "split" && (
+              <div
+                className={cn(
+                  "relative h-full transition-all duration-300 ease-in-out",
+                  !isFullscreen
+                    ? "w-1/2"
+                    : "absolute top-4 right-4 w-[320px] h-[180px]",
+                )}
+                style={!isFullscreen ? { minHeight: "400px" } : {}}
+              >
+                <div
+                  className={cn(
+                    "w-full h-full",
+                    isFullscreen &&
+                      "rounded-lg overflow-hidden shadow-lg border border-border",
+                  )}
+                >
+                  <WebcamFeed
+                    key="split-webcam"
+                    isEnabled={isCameraEnabled}
+                    className="w-full h-full"
+                    onError={setWebcamError}
+                    onResult={onUserResults}
+                  />
+                </div>
               </div>
             )}
 
-            {!youtubeVideoId && (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                Enter a YouTube URL to begin
+            {/* Mini Webcam Overlay */}
+            {layout === "mini" && isCameraEnabled && !webcamError && (
+              <div className="absolute top-4 right-4 w-[320px] h-[180px] rounded-lg overflow-hidden shadow-lg border border-border">
+                <WebcamFeed
+                  key="mini-webcam"
+                  isEnabled={isCameraEnabled}
+                  className="w-full h-full"
+                  onError={setWebcamError}
+                  onResult={setUserResults}
+                />
               </div>
             )}
           </div>
 
-          {/* Webcam Feed */}
-          {layout === "split" && (
-            <div
-              className={cn(
-                "relative h-full transition-all duration-300 ease-in-out",
-                !isFullscreen
-                  ? "w-1/2"
-                  : "absolute top-4 right-4 w-[320px] h-[180px]",
-              )}
-              style={!isFullscreen ? { minHeight: "400px" } : {}}
-            >
-              <div
-                className={cn(
-                  "w-full h-full",
-                  isFullscreen &&
-                    "rounded-lg overflow-hidden shadow-lg border border-border",
-                )}
-              >
-                <WebcamFeed
-                  key="split-webcam"
-                  isEnabled={isCameraEnabled}
-                  className="w-full h-full"
-                  onError={setWebcamError}
-                  onResult={onUserResults}
-                />
-              </div>
-            </div>
-          )}
+          {/* Floating Controls */}
+          <div className="absolute top-20 left-4 z-10 flex flex-col gap-2">
+            {isCameraEnabled && !webcamError && (
+              <LayoutToggle layout={layout} onChange={setLayout} />
+            )}
+            <GridToggle showGrid={showGrid} onChange={setShowGrid} />
+          </div>
 
-          {/* Mini Webcam Overlay */}
-          {layout === "mini" && isCameraEnabled && !webcamError && (
-            <div className="absolute top-4 right-4 w-[320px] h-[180px] rounded-lg overflow-hidden shadow-lg border border-border">
-              <WebcamFeed
-                key="mini-webcam"
-                isEnabled={isCameraEnabled}
-                className="w-full h-full"
-                onError={setWebcamError}
-                onResult={setUserResults}
+          {/* Alignment Grid Overlay */}
+          {showGrid && <AlignmentGrid />}
+
+          {/* Video Controls */}
+          {youtubeVideoId && (
+            <div className="absolute bottom-0 left-0 right-0">
+              <VideoControls
+                isPlaying={isPlaying}
+                currentTime={currentTime}
+                duration={duration}
+                layout={layout}
+                showGrid={showGrid}
+                isFullscreen={isFullscreen}
+                onPlayPause={handlePlayPause}
+                onReset={handleReset}
+                onSeek={handleSeek}
+                onLayoutToggle={() =>
+                  setLayout(layout === "split" ? "mini" : "split")
+                }
+                onGridToggle={() => setShowGrid(!showGrid)}
+                onFullscreenToggle={toggleFullscreen}
+                disabled={isVideoLoading}
               />
             </div>
           )}
         </div>
-
-        {/* Floating Controls */}
-        <div className="absolute top-20 left-4 z-10 flex flex-col gap-2">
-          {isCameraEnabled && !webcamError && (
-            <LayoutToggle layout={layout} onChange={setLayout} />
-          )}
-          <GridToggle showGrid={showGrid} onChange={setShowGrid} />
-        </div>
-
-        {/* Alignment Grid Overlay */}
-        {showGrid && <AlignmentGrid />}
-
-        {/* Video Controls */}
-        {youtubeVideoId && (
-          <div className="absolute bottom-0 left-0 right-0">
-            <VideoControls
-              isPlaying={isPlaying}
-              currentTime={currentTime}
-              duration={duration}
-              layout={layout}
-              showGrid={showGrid}
-              isFullscreen={isFullscreen}
-              onPlayPause={handlePlayPause}
-              onReset={handleReset}
-              onSeek={handleSeek}
-              onLayoutToggle={() =>
-                setLayout(layout === "split" ? "mini" : "split")
-              }
-              onGridToggle={() => setShowGrid(!showGrid)}
-              onFullscreenToggle={toggleFullscreen}
-              disabled={isVideoLoading}
-            />
-          </div>
-        )}
       </div>
-    </div>
+      }
+      <Screenshot numScreenshots={numScreenshotsTaken} hidden={!workoutIsDone} />
+    </>
   );
 };
 
