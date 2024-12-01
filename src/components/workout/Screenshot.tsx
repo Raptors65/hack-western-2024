@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
+import VoiceflowWidget from '../VoiceFlow';
 
 type ScreenshotProps = {
   numScreenshots: number;
@@ -64,6 +65,7 @@ const Screenshot = (props: ScreenshotProps) => {
           </div>
         </div>
       }
+    <VoiceflowWidget/>
     </div>
   )
 }

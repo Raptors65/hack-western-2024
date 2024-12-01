@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PersonStanding, Gamepad, BarChart3 } from "lucide-react";
+import VoiceflowWidget from "./VoiceFlow";
 
 function Home() {
   const navigate = useNavigate();
@@ -79,6 +80,7 @@ function Home() {
           </Button>
         </div>
       </div>
+      <VoiceflowWidget/>
     </div>
   );
 }
