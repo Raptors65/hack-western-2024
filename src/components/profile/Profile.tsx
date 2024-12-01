@@ -122,7 +122,7 @@ const Profile = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">High Score</p>
-                <p className="text-2xl font-bold">{stats.highScore}</p>
+                <p className="text-2xl font-bold">{stats.highScore.toLocaleString()}</p>
                 <div className="w-full h-48 mt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart width={150} height={40} data={data}>
@@ -132,7 +132,7 @@ const Profile = () => {
     return (
       <div className="bg-white border p-2">
         <p>{label}</p>
-        <p className="text-green-500">{`${payload[0].name}: ${payload[0].value}`}</p>
+        <p className="text-green-500">{`${payload[0].name}: ${payload[0].value.toLocaleString()}`}</p>
       </div>
     );
   }
