@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Progress } from "../ui/progress";
+import { Home } from "lucide-react";
 
 type YouTubeInputProps = {
   onSubmit: (s: string) => void;
@@ -33,7 +34,7 @@ const YouTubeInput = (props: YouTubeInputProps) => {
       {!props.isPlaying ? 
         <form onSubmit={handleSubmit} className="flex gap-2">
           <a href="/" className="flex items-center ml-1 mr-3">
-            <img src="/home.svg" width={24} height={24} />
+            <Home className="w-6 h-6" />
           </a>
           <input
             type="text"
@@ -52,11 +53,13 @@ const YouTubeInput = (props: YouTubeInputProps) => {
         </form>
       :
       <div className="flex items-center gap-x-5">
-        <span className="text-xl">0</span>
+        <a href="/" className="flex items-center ml-1 mr-3">
+          <Home className="w-6 h-6" />
+        </a>
+        <span className="text-xl w-56 text-right">{Math.round(props.score).toLocaleString()} / {props.maxScore.toLocaleString()}</span>
         <Progress value={props.score / props.maxScore * 100} />
-        <span className="text-xl">{props.maxScore.toLocaleString()}</span>
         <button
-          className="px-4 py-2 w-36 bg-green-500 text-white rounded disabled:opacity-50"
+          className="px-4 py-2 w-40 bg-green-500 text-white rounded disabled:opacity-50"
           onClick={props.onEndWorkout}
         >
           End Workout
