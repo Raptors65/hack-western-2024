@@ -8,43 +8,43 @@ import { Bar, BarChart, CartesianGrid, Legend, Rectangle, ResponsiveContainer, T
 // Placeholder data - would normally come from a backend
 const data = [
   {
-    day: 'Sunday',
+    day: 'Sun',
     Time: 0.5,
     Score: 120023,
     amt: 2400,
   },
   {
-    day: 'Monday',
+    day: 'Mon',
     Time: 2,
     Score: 360120,
     amt: 2210,
   },
   {
-    day: 'Tuesday',
+    day: 'Tues',
     Time: 1,
     Score: 252345,
     amt: 2290,
   },
   {
-    day: 'Wednesday',
+    day: 'Wed',
     Time: 0.7,
     Score: 200000,
     amt: 2000,
   },
   {
-    day: 'Thursday',
+    day: 'Thurs',
     Time: 1.9,
     Score: 500000,
     amt: 2181,
   },
   {
-    day: 'Friday',
+    day: 'Fri',
     Time: 1.4,
     Score: 340000,
     amt: 2500,
   },
   {
-    day: 'Saturday',
+    day: 'Sat',
     Time: 2.5,
     Score: 432000,
     amt: 2100,
@@ -90,28 +90,28 @@ const Profile = () => {
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">Total Time</p>
                 <p className="text-2xl font-bold">{stats.totalTime}</p>
-                <div className="w-full h-48 mt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart width={150} height={40} data={data}>
-                      <XAxis dataKey="day" />
-                      <Tooltip content={({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border p-2">
-        <p>{label}</p>
-        <p className="text-blue-500">{`${payload[0].name}: ${payload[0].value} h`}</p>
-      </div>
-    );
-  }
-
-  return null;
-}} />
-                      {/* <YAxis /> */}
-                      <Bar dataKey="Time" fill="#3b82f6" activeBar={<Rectangle fill="#3b82f6" stroke="black" />} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
               </div>
+            </div>
+            <div className="w-full h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart width={150} height={40} data={data}>
+                  <XAxis dataKey="day" />
+                  <Tooltip content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white border p-2">
+                          <p>{label}</p>
+                          <p className="text-blue-500">{`${payload[0].name}: ${payload[0].value} h`}</p>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  }} />
+                  {/* <YAxis /> */}
+                  <Bar dataKey="Time" fill="#3b82f6" animationDuration={800} animationBegin={0} activeBar={<Rectangle fill="#3b82f6" stroke="black" />} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </Card>
 
@@ -124,28 +124,28 @@ const Profile = () => {
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground">High Score</p>
                 <p className="text-2xl font-bold">{stats.highScore.toLocaleString()}</p>
-                <div className="w-full h-48 mt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart width={150} height={40} data={data}>
-                      <XAxis dataKey="day" />
-                      <Tooltip content={({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white border p-2">
-        <p>{label}</p>
-        <p className="text-green-500">{`${payload[0].name}: ${payload[0].value.toLocaleString()}`}</p>
-      </div>
-    );
-  }
-
-  return null;
-}} />
-                      {/* <YAxis /> */}
-                      <Bar dataKey="Score" fill="#22c55e" activeBar={<Rectangle fill="#22c55e" stroke="black" />} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
               </div>
+            </div>
+            <div className="w-full h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart width={150} height={40} data={data}>
+                  <XAxis dataKey="day" />
+                  <Tooltip content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white border p-2">
+                          <p>{label}</p>
+                          <p className="text-green-500">{`${payload[0].name}: ${payload[0].value.toLocaleString()}`}</p>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  }} />
+                  {/* <YAxis /> */}
+                  <Bar dataKey="Score" fill="#22c55e" animationDuration={800} animationBegin={0} activeBar={<Rectangle fill="#22c55e" stroke="black" />} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </Card>
 
