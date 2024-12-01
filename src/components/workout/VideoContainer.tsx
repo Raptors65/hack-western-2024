@@ -134,6 +134,10 @@ const VideoContainer = ({
             fullCanvasRef.current.getContext("2d").drawImage(
               videoRef.current,
               0,
+              90,
+              window.innerWidth,
+              window.innerHeight,
+              0,
               0,
               window.innerWidth,
               window.innerHeight
