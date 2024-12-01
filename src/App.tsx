@@ -8,6 +8,7 @@ import Preview from "./components/preview";
 import Login from "./components/login";
 import Logout from "./components/logout";
 import routes from "tempo-routes";
+import PosePrompting from "./components/workout/PosePrompting";
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
-        {/* <Route path="/game" element={<GameMode />} /> */}
+        {<Route path="/game" element={<PosePrompting />} />}
         <Route path="/profile" element={<Profile />} />
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       </Routes>
