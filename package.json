@@ -62,6 +62,7 @@
     "react-router": "^6.23.1",
     "react-router-dom": "^6.23.1",
     "react-youtube": "^10.1.0",
+    "recharts": "^2.13.3",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.1",
